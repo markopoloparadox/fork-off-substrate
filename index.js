@@ -17,14 +17,15 @@ const forkedSpecPath = path.join(__dirname, 'data', 'fork.json');
 const storagePath = path.join(__dirname, 'data', 'storage.json');
 
 // Using http endpoint since substrate's Ws endpoint has a size limit.
-const provider = new HttpProvider(process.env.HTTP_RPC_ENDPOINT || 'http://localhost:9933')
+const provider = new HttpProvider('http://127.0.0.1:9933')
 // The storage download will be split into 256^chunksLevel chunks.
 const chunksLevel = process.env.FORK_CHUNKS_LEVEL || 1;
 const totalChunks = Math.pow(256, chunksLevel);
 
-const alice = process.env.ALICE || ''
+const alice = process.env.ALICE || 'true'
 const originalChain = process.env.ORIG_CHAIN || '';
 const forkChain = process.env.FORK_CHAIN || '';
+const quickMode = process.env.QUICK_MODE || `true`;
 
 let chunksFetched = 0;
 let separator = false;
@@ -171,7 +172,7 @@ async function fetchChunks(prefix, levelsRemaining, stream, at) {
   }
 
   // Async fetch the last level
-  if (process.env.QUICK_MODE && levelsRemaining == 1) {
+  if (quickMode && levelsRemaining == 1) {
     let promises = [];
     for (let i = 0; i < 256; i++) {
       promises.push(fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream, at));
